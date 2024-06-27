@@ -9,7 +9,6 @@ class Employee(models.Model):
     position = models.CharField(max_length=100)
     start_date = models.DateField()
     salary = models.IntegerField()
-    expedition_date = models.DateField()
-
+    expedition_date = models.DateField(auto_now_add=True)
     def __str__(self):
         return self.name
