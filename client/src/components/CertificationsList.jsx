@@ -16,7 +16,7 @@ export function CertificationsList() {
 
 
   return (
-    <div>
+    <div className="grid grid-cols-3 gap-3">
       {certifications.map(certification=>(
         <CertificationsCard key={certification.id} certification={certification}/>
       ))}

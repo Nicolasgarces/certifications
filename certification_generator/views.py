@@ -10,6 +10,7 @@ from reportlab.lib.utils import ImageReader
 from reportlab.lib.colors import Color, black
 from io import BytesIO
 from django.http import HttpResponse
+from num2words import num2words
 
 
 class EmployeeView(viewsets.ModelViewSet):
@@ -56,6 +57,8 @@ class EmployeeView(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def generate_certificate(self, request, pk=None):
         employee = self.get_object()
+        salary_string = num2words(employee.salary, lang='es')
+        print(salary_string)
         buffer = BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter,
                                 rightMargin=72, leftMargin=72,
@@ -91,11 +94,11 @@ class EmployeeView(viewsets.ModelViewSet):
 
         # Información del empleado
         employee_info = f"""
-        <b>{employee.name}</b>, identificado con cédula de ciudadanía
+        <b>{employee.name}</b>, identificado(a) con cédula de ciudadanía
         <b>{employee.id_number} de {employee.city}</b>, se encuentra vinculado mediante contrato a
-        término indefinido, como <b>{employee.position}</b>, desde el <b>{employee.start_date.strftime('%d de %B del %Y')}</b> 
-        hasta la fecha, devengando un salario mensual de
-        <b>${employee.salary:,.2f}</b>, más auxilio de transporte.
+        término indefinido, como {employee.position}, desde el <b>{employee.start_date.strftime('%d de %B del %Y')}</b> 
+        hasta la fecha, devengando un salario mensual de {salary_string} Pesos Mcte.
+        <b>(${employee.salary:,.2f})</b>, más auxilio de transporte.
         """
         Story.append(Paragraph(employee_info, styles['BodyText']))
 
