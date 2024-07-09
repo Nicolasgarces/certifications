@@ -11,7 +11,8 @@ from reportlab.lib.colors import Color, black
 from io import BytesIO
 from django.http import HttpResponse
 from num2words import num2words
-
+from babel.dates import format_date, format_datetime, format_time
+import locale
 
 class EmployeeView(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializer
@@ -58,7 +59,6 @@ class EmployeeView(viewsets.ModelViewSet):
     def generate_certificate(self, request, pk=None):
         employee = self.get_object()
         salary_string = num2words(employee.salary, lang='es')
-        print(salary_string)
         buffer = BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter,
                                 rightMargin=72, leftMargin=72,
@@ -95,8 +95,8 @@ class EmployeeView(viewsets.ModelViewSet):
         # Información del empleado
         employee_info = f"""
         <b>{employee.name}</b>, identificado(a) con cédula de ciudadanía
-        <b>{employee.id_number} de {employee.city}</b>, se encuentra vinculado mediante contrato a
-        término indefinido, como {employee.position}, desde el <b>{employee.start_date.strftime('%d de %B del %Y')}</b> 
+        <b>{employee.id_number}</b> de <b>{employee.city}</b>, se encuentra vinculado mediante contrato a
+        término indefinido, como {employee.position}, desde el <b>{format_date(employee.start_date, 'd ' 'MMMM ' 'YYYY', locale='es')}</b> 
         hasta la fecha, devengando un salario mensual de {salary_string} Pesos Mcte.
         <b>(${employee.salary:,.2f})</b>, más auxilio de transporte.
         """
@@ -123,13 +123,13 @@ class EmployeeView(viewsets.ModelViewSet):
         # Pie de página
         footer = f"""
         <para>
-        Se expide con destino a la Cooperativa Beneficiar, a los <b>{employee.expedition_date.strftime('%d')}</b> días del mes de
-        <b>{employee.expedition_date.strftime('%B')}</b> del <b>{employee.expedition_date.year}</b>.
+        Se expide a solicitud de la interesado(a), a los <b>{format_date(employee.expedition_date, 'd', locale='es')}</b> días del mes de
+        <b>{format_date(employee.expedition_date, 'MMMM', locale='es')}</b> del <b>{employee.expedition_date.year}</b>.
         </para>
         """
         Story.append(Paragraph(footer, styles['BodyText']))
 
-        Story.append(Spacer(1, 12))
+        Story.append(Spacer(1, 48))
 
         # Firma y datos de contacto
         signature = """
@@ -139,13 +139,13 @@ class EmployeeView(viewsets.ModelViewSet):
         """
         Story.append(Paragraph(signature, styles['BodyText']))
 
-        Story.append(Spacer(1, 12))
+        Story.append(Spacer(1, 24))
 
         # Nota de verificación
-        verification = "Nota: Para confirmar su contenido se debe comunicar al 3164307996"
+        verification = "<b>Nota: Para confirmar su contenido se debe comunicar al 3164307996</b>"
         Story.append(Paragraph(verification, styles['BodyText']))
 
-        Story.append(Spacer(1, 12))
+        Story.append(Spacer(1, 50))
 
         # Dirección y contacto en el pie de página
         contact_info = """
